@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Конструктор кроссвордов</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body {
+            width: 100%; height: 100%;
+            font-family: system-ui, sans-serif;
+            background: #e8e0d5;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .app {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .top-bar {
+            background: #fff;
+            padding: 6px 8px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .top-bar h1 { font-size: 14px; margin-right: auto; }
+        button {
+            padding: 6px 10px;
+            font-size: 11px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .btn-b { background: #5c7c99; color: #fff; }
+        .btn-r { background: #c0392b; color: #fff; }
+        .btn-g { background: #27ae60; color: #fff; }
+        .btn-o { background: #fff; color: #5c7c99; border: 2px solid #5c7c99; }
+
+        .grid-scroll {
+            flex: 1;
+            overflow: auto;
+            -webkit-overflow-scrolling: touch;
+            padding: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .grid {
+            display: grid;
+            gap: 1px;
+            background: #aaa;
+            padding: 2px;
+            border-radius: 3px;
+        }
+        .cell {
+            background: #fff;
+            border: 1px solid #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            position: relative;
+            cursor: pointer;
+            color: #222;
+            user-select: none;
+        }
+        .cell.sel {
+            background: #bbdefb;
+            border-color: #1e88e5;
+            box-shadow: inset 0 0 0 2px #1e88e5;
+            z-index: 2;
+        }
+        .cell.lock { background: #f0f0f0; color: #555; }
+        .cell.hl { background: #ffe082; border-color: #f9a825; }
+        .cell .num {
+            position: absolute;
+            top: 0; left: 1px;
+            font-size: 7px;
+            color: #999;
+            line-height: 1;
+            pointer-events: none;
+        }
+
+        .chips {
+            background: #fff;
+            padding: 4px 8px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+            flex-shrink: 0;
+            align-items: center;
+        }
+        .chip {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            cursor: pointer;
+            background: #eee;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        .chip.on { background: #5c7c99; color: #fff; }
+
+        .bottom {
+            background: #fff;
+            padding: 6px 8px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .bottom input {
+            width: 100%;
+            padding: 8px;
+            font-size: 16px;
+            text-align: center;
+            text-transform: uppercase;
+            font-weight: bold;
+            letter-spacing: 2px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+        }
+        .row { display: flex; gap: 4px; }
+        .row button { flex: 1; }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 99;
+            justify-content: center;
+            align-items: center;
+            padding: 15px;
+        }
+        .modal.on { display: flex; }
+        .mbox {
+            background: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 350px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .mbox input { padding: 8px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px; width: 100%; }
+    </style>
+</head>
+<body>
+<div class="app">
+    <div class="top-bar">
+        <h1>🧩 Кроссворд</h1>
+        <button class="btn-o" onclick="save()">💾</button>
+        <button class="btn-o" onclick="load()">📂</button>
+        <button class="btn-o" onclick="sizeModal()">📐</button>
+        <button class="btn-g" onclick="exp()">📋</button>
+        <button class="btn-r" onclick="clr()">🗑</button>
+    </div>
+
+    <div class="grid-scroll" id="scroll">
+        <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="chips" id="chips"><span style="font-size:10px;color:#888;">Слова:</span></div>
+
+    <div class="bottom">
+        <input type="text" id="wordInp" placeholder="Введи слово" maxlength="30" autocomplete="off">
+        <div class="row">
+            <button class="btn-b" onclick="place()">✅ Разместить</button>
+            <button class="btn-o" onclick="clearSel()">✕ Снять</button>
+            <button class="btn-o" onclick="questModal()">❓ Вопрос</button>
+            <button class="btn-r" onclick="delWord()">🗑</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal" id="qmod">
+    <div class="mbox">
+        <h4>❓ Вопрос к: <span id="qw"></span></h4>
+        <input type="text" id="qi" placeholder="Твой вопрос">
+        <div class="row"><button class="btn-b" onclick="saveQ()">OK</button><button class="btn-o" onclick="closeM('qmod')">Отмена</button></div>
+    </div>
+</div>
+
+<div class="modal" id="smod">
+    <div class="mbox">
+        <h4>📐 Размер</h4>
+        <label>Строки: <input type="number" id="ri" min="3" max="30" style="width:60px;"></label>
+        <label>Столбцы: <input type="number" id="ci" min="3" max="30" style="width:60px;"></label>
+        <div class="row"><button class="btn-b" onclick="applySz()">OK</button><button class="btn-o" onclick="closeM('smod')">Отмена</button></div>
+    </div>
+</div>
+
+<script>
+let grid=[], rows=12, cols=12, words=[], sel=[], selWid=null, nid=1;
+
+function initG(){ grid=[]; for(let r=0;r<rows;r++) grid[r]=Array(cols).fill(''); }
+
+function cellSize(){
+    const w=window.innerWidth-16;
+    const h=window.innerHeight-200;
+    const s=Math.floor(Math.min(w/cols, h/rows, 40));
+    return Math.max(18, s);
+}
+
+function render(){
+    const s=cellSize();
+    const g=document.getElementById('grid');
+    g.style.gridTemplateColumns=`repeat(${cols}, ${s}px)`;
+    g.style.gridTemplateRows=`repeat(${rows}, ${s}px)`;
+    const hl=new Set();
+    if(selWid){ const w=words.find(x=>x.id===selWid); if(w) w.cells.forEach(c=>hl.add(`${c.r},${c.c}`)); }
+    let h='';
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++){
+        const l=grid[r][c];
+        const ss=sel.some(x=>x.r===r&&x.c===c);
+        const hh=hl.has(`${r},${c}`);
+        const lk=l!==''&&!ss&&!hh;
+        const n=getN(r,c);
+        let cl='cell';
+        if(ss) cl+=' sel'; else if(hh) cl+=' hl'; else if(lk) cl+=' lock';
+        h+=`<div class="${cl}" style="width:${s}px;height:${s}px;font-size:${s*0.45}px;" data-r="${r}" data-c="${c}" onclick="clickCell(${r},${c})">${n?`<span class="num" style="font-size:${Math.max(5,s*0.2)}px;">${n}</span>`:''}${l}</div>`;
+    }
+    g.innerHTML=h;
+    // chips
+    const chips=document.getElementById('chips');
+    let ch='<span style="font-size:10px;color:#888;">Слова:</span>';
+    words.forEach((w,i)=>{ const on=w.id===selWid?' on':''; ch+=`<span class="chip${on}" onclick="selW(${w.id})">${i+1}.${w.word}</span>`; });
+    if(!words.length) ch+='<span style="font-size:10px;color:#aaa;">нет</span>';
+    chips.innerHTML=ch;
+}
+
+function getN(r,c){ for(let i=0;i<words.length;i++){ const w=words[i]; if(w.cells.length&&w.cells[0].r===r&&w.cells[0].c===c) return i+1; } return null; }
+
+function clickCell(r,c){
+    const i=sel.findIndex(x=>x.r===r&&x.c===c);
+    if(i>=0){ sel.splice(i,1); render(); return; }
+    if(!sel.length){ sel.push({r,c}); render(); return; }
+    const f=sel[0];
+    if(sel.length===1){ if(r===f.r||c===f.c){ sel.push({r,c}); fill(); render(); } return; }
+    const isH=sel.every(x=>x.r===f.r);
+    const isV=sel.every(x=>x.c===f.c);
+    if(isH&&r===f.r){ sel.push({r,c}); fill(); render(); }
+    else if(isV&&c===f.c){ sel.push({r,c}); fill(); render(); }
+}
+function fill(){
+    if(sel.length<2) return;
+    const f=sel[0];
+    const isH=sel.every(x=>x.r===f.r);
+    if(isH){ const row=f.r; const cs=sel.map(x=>x.c); sel=[]; for(let c=Math.min(...cs);c<=Math.max(...cs);c++) sel.push({r:row,c}); }
+    else { const col=f.c; const rs=sel.map(x=>x.r); sel=[]; for(let r=Math.min(...rs);r<=Math.max(...rs);r++) sel.push({r,c:col}); }
+}
+function clearSel(){ sel=[]; document.getElementById('wordInp').value=''; render(); }
+
+function place(){
+    if(!sel.length){ alert('Выдели клетки'); return; }
+    const w=document.getElementById('wordInp').value.trim().toUpperCase();
+    if(!w){ alert('Введи слово'); return; }
+    if(w.length!==sel.length){ alert(`Длина ${w.length} ≠ ${sel.length} клеток`); return; }
+    for(let i=0;i<w.length;i++){ const{r,c}=sel[i]; if(grid[r][c]!==''&&grid[r][c]!==w[i]){ alert(`[${r+1},${c+1}] уже «${grid[r][c]}» ≠ «${w[i]}»`); return; } }
+    for(let i=0;i<w.length;i++){ const{r,c}=sel[i]; grid[r][c]=w[i]; }
+    const dir=sel[0].r===sel[1]?.r?'h':'v';
+    const nw={id:nid++, word:w, question:'', cells:sel.map(x=>({r:x.r,c:x.c})), direction:dir};
+    words.push(nw); selWid=nw.id; sel=[]; document.getElementById('wordInp').value=''; render();
+}
+
+function selW(id){ selWid=id; sel=[]; document.getElementById('wordInp').value=''; render(); }
+function delWord(){
+    if(!selWid){ alert('Выбери слово'); return; }
+    if(!confirm('Удалить?')) return;
+    words=words.filter(w=>w.id!==selWid); selWid=null; render();
+}
+function questModal(){
+    if(!selWid){ alert('Выбери слово'); return; }
+    const w=words.find(x=>x.id===selWid);
+    document.getElementById('qw').textContent=w.word;
+    document.getElementById('qi').value=w.question||'';
+    document.getElementById('qmod').classList.add('on');
+}
+function saveQ(){ const w=words.find(x=>x.id===selWid); if(w) w.question=document.getElementById('qi').value.trim(); closeM('qmod'); render(); }
+function sizeModal(){ document.getElementById('ri').value=rows; document.getElementById('ci').value=cols; document.getElementById('smod').classList.add('on'); }
+function applySz(){
+    const nr=parseInt(document.getElementById('ri').value), nc=parseInt(document.getElementById('ci').value);
+    if(nr<3||nr>30||nc<3||nc>30){ alert('3–30'); return; }
+    const old=grid; rows=nr; cols=nc; initG();
+    for(let r=0;r<Math.min(old.length,nr);r++) for(let c=0;c<Math.min(old[r].length,nc);c++) grid[r][c]=old[r][c];
+    words.forEach(w=>{ w.cells=w.cells.filter(c=>c.r<nr&&c.c<nc); });
+    words=words.filter(w=>w.cells.length);
+    if(selWid&&!words.find(w=>w.id===selWid)) selWid=null;
+    sel=sel.filter(x=>x.r<nr&&x.c<nc);
+    closeM('smod'); render();
+}
+function closeM(id){ document.getElementById(id).classList.remove('on'); }
+
+function save(){ localStorage.setItem('cw3',JSON.stringify({rows,cols,grid,words,nid})); alert('✅ Сохранено'); }
+function load(){
+    const s=localStorage.getItem('cw3'); if(!s){ alert('Нет данных'); return; }
+    try{ const d=JSON.parse(s); rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid; sel=[]; selWid=null; render(); alert('📂 Загружено'); }catch(e){ alert('Ошибка'); }
+}
+function clr(){ if(!confirm('Удалить всё?')) return; rows=12; cols=12; initG(); words=[]; sel=[]; selWid=null; nid=1; document.getElementById('wordInp').value=''; render(); }
+
+function exp(){
+    if(!words.length){ alert('Нет слов'); return; }
+    let mr=rows,Mr=0,mc=cols,Mc=0;
+    for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) if(grid[r][c]!==''){ mr=Math.min(mr,r); Mr=Math.max(Mr,r); mc=Math.min(mc,c); Mc=Math.max(Mc,c); }
+    mr=Math.max(0,mr-1); Mr=Math.min(rows-1,Mr+1); mc=Math.max(0,mc-1); Mc=Math.min(cols-1,Mc+1);
+    const rr=Mr-mr+1, cc=Mc-mc+1;
+    let h=`<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Кроссворд</title><style>body{font-family:system-ui,sans-serif;background:#f5f0e8;display:flex;flex-direction:column;align-items:center;padding:10px;}h1{color:#333;}.g{display:grid;grid-template-columns:repeat(${cc},1fr);gap:2px;background:#ddd;padding:4px;border-radius:6px;max-width:500px;width:100%;}.c{aspect-ratio:1;background:white;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(12px,3vw,20px);text-transform:uppercase;position:relative;}.e{background:transparent;border:none;}.n{position:absolute;top:1px;left:3px;font-size:8px;color:#888;}.q{max-width:500px;width:100%;margin-top:15px;background:white;padding:15px;border-radius:10px;}</style></head><body><h1>🧩 Кроссворд</h1><div class="g">`;
+    for(let r=mr;r<=Mr;r++) for(let c=mc;c<=Mc;c++){ const l=grid[r][c]; const n=getN(r,c); h+=l===''?'<div class="c e"></div>':`<div class="c">${n?`<span class="n">${n}</span>`:''}${l}</div>`; }
+    h+='</div><div class="q"><h2>❓ Вопросы</h2>';
+    words.forEach((w,i)=>h+=`<p><strong>${i+1}.</strong> ${w.question||'?'} (${w.word.length} букв)</p>`);
+    h+='</div></body></html>';
+    navigator.clipboard.writeText(h).then(()=>alert('✅ HTML скопирован!'));
+}
+
+function resize(){ render(); }
+window.addEventListener('resize', resize);
+initG();
+const s=localStorage.getItem('cw3');
+if(s){ try{ const d=JSON.parse(s); rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid; }catch(e){} }
+render();
+</script>
+</body>
+</html>
