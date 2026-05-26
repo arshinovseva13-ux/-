@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=1.0, minimum-scale=1.0">
     <title>Конструктор кроссвордов</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -14,156 +14,108 @@
             touch-action: manipulation;
             -webkit-tap-highlight-color: transparent;
         }
-        .app {
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
+        .app { display: flex; flex-direction: column; height: 100%; }
+
         .top-bar {
-            background: #fff;
-            padding: 6px 8px;
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-            flex-shrink: 0;
-            align-items: center;
+            background: #fff; padding: 6px 10px;
+            display: flex; gap: 6px; align-items: center;
+            flex-shrink: 0; flex-wrap: wrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
-        .top-bar h1 { font-size: 14px; margin-right: auto; }
+        .top-bar h1 { font-size: 15px; margin-right: auto; white-space: nowrap; }
+        .top-bar input {
+            padding: 6px 10px; font-size: 13px;
+            border: 2px solid #ddd; border-radius: 6px; width: 140px;
+        }
         button {
-            padding: 6px 10px;
-            font-size: 11px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-weight: 600;
-            white-space: nowrap;
+            padding: 7px 12px; font-size: 11px; border: none;
+            border-radius: 5px; cursor: pointer; font-weight: 600; white-space: nowrap;
         }
-        .btn-b { background: #5c7c99; color: #fff; }
-        .btn-r { background: #c0392b; color: #fff; }
-        .btn-g { background: #27ae60; color: #fff; }
-        .btn-o { background: #fff; color: #5c7c99; border: 2px solid #5c7c99; }
+        .btn-blue { background: #5c7c99; color: #fff; }
+        .btn-red { background: #c0392b; color: #fff; }
+        .btn-green { background: #27ae60; color: #fff; }
+        .btn-outline { background: #fff; color: #5c7c99; border: 2px solid #5c7c99; }
+        .btn-gray { background: #95a5a6; color: #fff; }
+        .btn-small { padding: 5px 8px; font-size: 10px; }
 
         .grid-scroll {
-            flex: 1;
-            overflow: auto;
-            -webkit-overflow-scrolling: touch;
-            padding: 4px;
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            flex: 1; overflow: auto; -webkit-overflow-scrolling: touch;
+            padding: 6px; display: flex; justify-content: center; align-items: flex-start;
         }
         .grid {
-            display: grid;
-            gap: 1px;
-            background: #aaa;
-            padding: 2px;
-            border-radius: 3px;
+            display: grid; gap: 1px; background: #aaa; padding: 3px; border-radius: 4px;
         }
         .cell {
-            background: #fff;
-            border: 1px solid #999;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            text-transform: uppercase;
-            position: relative;
-            cursor: pointer;
-            color: #222;
-            user-select: none;
+            background: #fff; border: 1px solid #999;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; text-transform: uppercase;
+            position: relative; cursor: pointer; color: #222; user-select: none;
         }
         .cell.sel {
-            background: #bbdefb;
-            border-color: #1e88e5;
-            box-shadow: inset 0 0 0 2px #1e88e5;
-            z-index: 2;
+            background: #bbdefb; border-color: #1e88e5;
+            box-shadow: inset 0 0 0 2px #1e88e5; z-index: 2;
         }
         .cell.lock { background: #f0f0f0; color: #555; }
         .cell.hl { background: #ffe082; border-color: #f9a825; }
         .cell .num {
-            position: absolute;
-            top: 0; left: 1px;
-            font-size: 7px;
-            color: #999;
-            line-height: 1;
-            pointer-events: none;
+            position: absolute; top: 0; left: 1px;
+            font-size: 7px; color: #999; line-height: 1; pointer-events: none;
         }
 
         .chips {
-            background: #fff;
-            padding: 4px 8px;
-            display: flex;
-            gap: 4px;
-            overflow-x: auto;
-            flex-shrink: 0;
-            align-items: center;
+            background: #fff; padding: 4px 8px;
+            display: flex; gap: 4px; overflow-x: auto;
+            flex-shrink: 0; align-items: center;
         }
         .chip {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            cursor: pointer;
-            background: #eee;
-            white-space: nowrap;
-            font-weight: 600;
+            padding: 3px 8px; border-radius: 10px; font-size: 10px;
+            cursor: pointer; background: #eee; white-space: nowrap; font-weight: 600;
         }
         .chip.on { background: #5c7c99; color: #fff; }
 
         .bottom {
-            background: #fff;
-            padding: 6px 8px;
-            flex-shrink: 0;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
+            background: #fff; padding: 6px 10px; flex-shrink: 0;
+            display: flex; flex-direction: column; gap: 5px;
+            box-shadow: 0 -1px 3px rgba(0,0,0,0.1);
         }
         .bottom input {
-            width: 100%;
-            padding: 8px;
-            font-size: 16px;
-            text-align: center;
-            text-transform: uppercase;
-            font-weight: bold;
-            letter-spacing: 2px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
+            width: 100%; padding: 8px; font-size: 16px;
+            text-align: center; text-transform: uppercase;
+            font-weight: bold; letter-spacing: 2px;
+            border: 2px solid #ccc; border-radius: 5px;
         }
-        .row { display: flex; gap: 4px; }
+        .row { display: flex; gap: 5px; }
         .row button { flex: 1; }
 
         .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.5);
-            z-index: 99;
-            justify-content: center;
-            align-items: center;
-            padding: 15px;
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.5);
+            z-index: 99; justify-content: center; align-items: center; padding: 15px;
         }
         .modal.on { display: flex; }
         .mbox {
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            width: 100%;
-            max-width: 350px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
+            background: #fff; padding: 15px; border-radius: 10px;
+            width: 100%; max-width: 360px;
+            display: flex; flex-direction: column; gap: 8px;
         }
-        .mbox input { padding: 8px; border: 2px solid #ddd; border-radius: 5px; font-size: 14px; width: 100%; }
+        .mbox input {
+            padding: 8px; border: 2px solid #ddd;
+            border-radius: 5px; font-size: 14px; width: 100%;
+        }
+        .mbox textarea {
+            padding: 8px; border: 2px solid #ddd;
+            border-radius: 5px; font-size: 12px; width: 100%;
+            resize: vertical; font-family: monospace; height: 200px;
+        }
     </style>
 </head>
 <body>
 <div class="app">
     <div class="top-bar">
-        <h1>🧩 Кроссворд</h1>
-        <button class="btn-o" onclick="save()">💾</button>
-        <button class="btn-o" onclick="load()">📂</button>
-        <button class="btn-o" onclick="sizeModal()">📐</button>
-        <button class="btn-g" onclick="exp()">📋</button>
-        <button class="btn-r" onclick="clr()">🗑</button>
+        <h1>🧩 Конструктор</h1>
+        <input type="text" id="titleInput" placeholder="Название кроссворда" value="Кроссворд">
+        <button class="btn-outline btn-small" onclick="sizeModal()">📐 Размер</button>
+        <button class="btn-green btn-small" onclick="exp()">📋 Экспорт</button>
     </div>
 
     <div class="grid-scroll" id="scroll">
@@ -175,10 +127,16 @@
     <div class="bottom">
         <input type="text" id="wordInp" placeholder="Введи слово" maxlength="30" autocomplete="off">
         <div class="row">
-            <button class="btn-b" onclick="place()">✅ Разместить</button>
-            <button class="btn-o" onclick="clearSel()">✕ Снять</button>
-            <button class="btn-o" onclick="questModal()">❓ Вопрос</button>
-            <button class="btn-r" onclick="delWord()">🗑</button>
+            <button class="btn-blue" onclick="place()">✅ Разместить</button>
+            <button class="btn-outline" onclick="clearSel()">✕ Снять</button>
+            <button class="btn-outline" onclick="questModal()">❓ Вопрос</button>
+            <button class="btn-red" onclick="delWord()">🗑</button>
+        </div>
+        <div class="row">
+            <button class="btn-green" onclick="save()">💾 Сохранить</button>
+            <button class="btn-outline" onclick="load()">📂 Загрузить</button>
+            <button class="btn-gray" onclick="exp()">📋 Экспорт HTML</button>
+            <button class="btn-red" onclick="clr()">🗑 Всё</button>
         </div>
     </div>
 </div>
@@ -187,29 +145,41 @@
     <div class="mbox">
         <h4>❓ Вопрос к: <span id="qw"></span></h4>
         <input type="text" id="qi" placeholder="Твой вопрос">
-        <div class="row"><button class="btn-b" onclick="saveQ()">OK</button><button class="btn-o" onclick="closeM('qmod')">Отмена</button></div>
+        <div class="row"><button class="btn-blue" onclick="saveQ()">OK</button><button class="btn-outline" onclick="closeM('qmod')">Отмена</button></div>
     </div>
 </div>
 
 <div class="modal" id="smod">
     <div class="mbox">
-        <h4>📐 Размер</h4>
-        <label>Строки: <input type="number" id="ri" min="3" max="30" style="width:60px;"></label>
-        <label>Столбцы: <input type="number" id="ci" min="3" max="30" style="width:60px;"></label>
-        <div class="row"><button class="btn-b" onclick="applySz()">OK</button><button class="btn-o" onclick="closeM('smod')">Отмена</button></div>
+        <h4>📐 Размер сетки</h4>
+        <label>Строки: <input type="number" id="ri" min="3" max="40" style="width:60px;"></label>
+        <label>Столбцы: <input type="number" id="ci" min="3" max="40" style="width:60px;"></label>
+        <div class="row"><button class="btn-blue" onclick="applySz()">OK</button><button class="btn-outline" onclick="closeM('smod')">Отмена</button></div>
+    </div>
+</div>
+
+<div class="modal" id="emod">
+    <div class="mbox">
+        <h4>📋 HTML-код кроссворда</h4>
+        <textarea id="ecode" readonly></textarea>
+        <div class="row">
+            <button class="btn-blue" onclick="copyExp()">📋 Копировать</button>
+            <button class="btn-green" onclick="downloadExp()">📥 Скачать</button>
+            <button class="btn-outline" onclick="closeM('emod')">Закрыть</button>
+        </div>
     </div>
 </div>
 
 <script>
-let grid=[], rows=12, cols=12, words=[], sel=[], selWid=null, nid=1;
+let grid=[], rows=16, cols=18, words=[], sel=[], selWid=null, nid=1;
 
 function initG(){ grid=[]; for(let r=0;r<rows;r++) grid[r]=Array(cols).fill(''); }
 
 function cellSize(){
     const w=window.innerWidth-16;
-    const h=window.innerHeight-200;
-    const s=Math.floor(Math.min(w/cols, h/rows, 40));
-    return Math.max(18, s);
+    const h=window.innerHeight-280;
+    const s=Math.floor(Math.min(w/cols, h/rows, 38));
+    return Math.max(16, s);
 }
 
 function render(){
@@ -228,10 +198,9 @@ function render(){
         const n=getN(r,c);
         let cl='cell';
         if(ss) cl+=' sel'; else if(hh) cl+=' hl'; else if(lk) cl+=' lock';
-        h+=`<div class="${cl}" style="width:${s}px;height:${s}px;font-size:${s*0.45}px;" data-r="${r}" data-c="${c}" onclick="clickCell(${r},${c})">${n?`<span class="num" style="font-size:${Math.max(5,s*0.2)}px;">${n}</span>`:''}${l}</div>`;
+        h+=`<div class="${cl}" style="width:${s}px;height:${s}px;font-size:${Math.max(8,s*0.42)}px;" data-r="${r}" data-c="${c}" onclick="clickCell(${r},${c})">${n?`<span class="num" style="font-size:${Math.max(5,s*0.2)}px;">${n}</span>`:''}${l}</div>`;
     }
     g.innerHTML=h;
-    // chips
     const chips=document.getElementById('chips');
     let ch='<span style="font-size:10px;color:#888;">Слова:</span>';
     words.forEach((w,i)=>{ const on=w.id===selWid?' on':''; ch+=`<span class="chip${on}" onclick="selW(${w.id})">${i+1}.${w.word}</span>`; });
@@ -290,7 +259,7 @@ function saveQ(){ const w=words.find(x=>x.id===selWid); if(w) w.question=documen
 function sizeModal(){ document.getElementById('ri').value=rows; document.getElementById('ci').value=cols; document.getElementById('smod').classList.add('on'); }
 function applySz(){
     const nr=parseInt(document.getElementById('ri').value), nc=parseInt(document.getElementById('ci').value);
-    if(nr<3||nr>30||nc<3||nc>30){ alert('3–30'); return; }
+    if(nr<3||nr>40||nc<3||nc>40){ alert('3–40'); return; }
     const old=grid; rows=nr; cols=nc; initG();
     for(let r=0;r<Math.min(old.length,nr);r++) for(let c=0;c<Math.min(old[r].length,nc);c++) grid[r][c]=old[r][c];
     words.forEach(w=>{ w.cells=w.cells.filter(c=>c.r<nr&&c.c<nc); });
@@ -301,32 +270,184 @@ function applySz(){
 }
 function closeM(id){ document.getElementById(id).classList.remove('on'); }
 
-function save(){ localStorage.setItem('cw3',JSON.stringify({rows,cols,grid,words,nid})); alert('✅ Сохранено'); }
-function load(){
-    const s=localStorage.getItem('cw3'); if(!s){ alert('Нет данных'); return; }
-    try{ const d=JSON.parse(s); rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid; sel=[]; selWid=null; render(); alert('📂 Загружено'); }catch(e){ alert('Ошибка'); }
+function save(){
+    const title=document.getElementById('titleInput').value||'Кроссворд';
+    localStorage.setItem('cw4',JSON.stringify({title,rows,cols,grid,words,nid}));
+    alert('✅ Сохранено');
 }
-function clr(){ if(!confirm('Удалить всё?')) return; rows=12; cols=12; initG(); words=[]; sel=[]; selWid=null; nid=1; document.getElementById('wordInp').value=''; render(); }
+function load(){
+    const s=localStorage.getItem('cw4'); if(!s){ alert('Нет данных'); return; }
+    try{
+        const d=JSON.parse(s);
+        document.getElementById('titleInput').value=d.title||'Кроссворд';
+        rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid;
+        sel=[]; selWid=null; render();
+        alert('📂 Загружено');
+    }catch(e){ alert('Ошибка'); }
+}
+function clr(){
+    if(!confirm('Удалить всё?')) return;
+    rows=16; cols=18; initG(); words=[]; sel=[]; selWid=null; nid=1;
+    document.getElementById('wordInp').value=''; document.getElementById('titleInput').value='Кроссворд'; render();
+}
 
+// ========== ЭКСПОРТ ==========
 function exp(){
     if(!words.length){ alert('Нет слов'); return; }
+    const title=document.getElementById('titleInput').value||'Кроссворд';
     let mr=rows,Mr=0,mc=cols,Mc=0;
     for(let r=0;r<rows;r++) for(let c=0;c<cols;c++) if(grid[r][c]!==''){ mr=Math.min(mr,r); Mr=Math.max(Mr,r); mc=Math.min(mc,c); Mc=Math.max(Mc,c); }
     mr=Math.max(0,mr-1); Mr=Math.min(rows-1,Mr+1); mc=Math.max(0,mc-1); Mc=Math.min(cols-1,Mc+1);
     const rr=Mr-mr+1, cc=Mc-mc+1;
-    let h=`<!DOCTYPE html><html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Кроссворд</title><style>body{font-family:system-ui,sans-serif;background:#f5f0e8;display:flex;flex-direction:column;align-items:center;padding:10px;}h1{color:#333;}.g{display:grid;grid-template-columns:repeat(${cc},1fr);gap:2px;background:#ddd;padding:4px;border-radius:6px;max-width:500px;width:100%;}.c{aspect-ratio:1;background:white;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(12px,3vw,20px);text-transform:uppercase;position:relative;}.e{background:transparent;border:none;}.n{position:absolute;top:1px;left:3px;font-size:8px;color:#888;}.q{max-width:500px;width:100%;margin-top:15px;background:white;padding:15px;border-radius:10px;}</style></head><body><h1>🧩 Кроссворд</h1><div class="g">`;
-    for(let r=mr;r<=Mr;r++) for(let c=mc;c<=Mc;c++){ const l=grid[r][c]; const n=getN(r,c); h+=l===''?'<div class="c e"></div>':`<div class="c">${n?`<span class="n">${n}</span>`:''}${l}</div>`; }
-    h+='</div><div class="q"><h2>❓ Вопросы</h2>';
-    words.forEach((w,i)=>h+=`<p><strong>${i+1}.</strong> ${w.question||'?'} (${w.word.length} букв)</p>`);
-    h+='</div></body></html>';
-    navigator.clipboard.writeText(h).then(()=>alert('✅ HTML скопирован!'));
+
+    let h=`<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>${title}</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;}
+        body{font-family:'Segoe UI',sans-serif;background:#f5f0e8;display:flex;flex-direction:column;align-items:center;padding:10px;min-height:100vh;}
+        h1{color:#333;margin-bottom:5px;text-align:center;font-size:1.3rem;}
+        .btns{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap;justify-content:center;}
+        .btns button{padding:8px 14px;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:13px;}
+        .b-on{background:#5c7c99;color:#fff;}
+        .b-off{background:#ddd;color:#333;}
+        .g{display:grid;grid-template-columns:repeat(${cc},1fr);gap:2px;background:#bbb;padding:4px;border-radius:6px;max-width:500px;width:100%;}
+        .c{aspect-ratio:1;background:white;border:1.5px solid #555;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:clamp(14px,4vw,22px);text-transform:uppercase;position:relative;cursor:default;}
+        .e{background:transparent;border:none;}
+        .n{position:absolute;top:1px;left:3px;font-size:8px;color:#888;pointer-events:none;}
+        .c input{width:100%;height:100%;border:none;text-align:center;font-weight:bold;font-size:clamp(14px,4vw,22px);text-transform:uppercase;background:transparent;outline:none;color:#222;padding:0;}
+        .c input:focus{background:#e3f2fd;outline:2px solid #1e88e5;z-index:2;position:relative;}
+        .correct{color:#27ae60!important;font-weight:bold;}
+        .wrong{color:#e74c3c!important;font-weight:bold;}
+        .shown{color:#222!important;}
+        .q{max-width:500px;width:100%;margin-top:15px;background:white;padding:15px;border-radius:10px;box-shadow:0 2px 10px rgba(0,0,0,0.1);}
+        .q h2{margin-top:0;font-size:1.1rem;}
+        .q p{margin:4px 0;font-size:13px;}
+        .q strong{color:#5c7c99;}
+    </style>
+</head>
+<body>
+    <h1>🧩 ${title}</h1>
+    <div class="btns">
+        <button id="btnSolve" class="b-on" onclick="modeSolve()">📝 Разгадывать</button>
+        <button id="btnCheck" class="b-off" onclick="modeCheck()">🔍 Проверить</button>
+        <button id="btnShow" class="b-off" onclick="modeShow()">👁 Показать</button>
+    </div>
+    <div class="g" id="g">`;
+
+    for(let r=mr;r<=Mr;r++) for(let c=mc;c<=Mc;c++){
+        const l=grid[r][c];
+        const n=getN(r,c);
+        if(l==='') h+='<div class="c e"></div>';
+        else h+=`<div class="c" data-r="${r}" data-c="${c}" data-letter="${l}">${n?`<span class="n">${n}</span>`:''}<input type="text" maxlength="1" class="cw-input" data-letter="${l}"></div>`;
+    }
+
+    h+=`</div>
+    <div class="q"><h2>❓ Вопросы</h2>`;
+
+    const sorted=[...words].sort((a,b)=>{
+        const an=getN(a.cells[0].r,a.cells[0].c)||0;
+        const bn=getN(b.cells[0].r,b.cells[0].c)||0;
+        return an-bn;
+    });
+    sorted.forEach(w=>{
+        const num=getN(w.cells[0].r,w.cells[0].c);
+        h+=`<p><strong>${num}.</strong> ${w.question||'?'} <em>(${w.word.length} букв)</em></p>`;
+    });
+
+    h+=`</div>
+<script>
+    let mode='solve';
+    const inputs=document.querySelectorAll('.cw-input');
+
+    function modeSolve(){
+        mode='solve';
+        inputs.forEach(inp=>{
+            inp.disabled=false;
+            inp.value='';
+            inp.className='cw-input';
+            inp.style.color='#222';
+            inp.style.background='transparent';
+        });
+        document.getElementById('btnSolve').className='b-on';
+        document.getElementById('btnCheck').className='b-off';
+        document.getElementById('btnShow').className='b-off';
+    }
+
+    function modeCheck(){
+        mode='check';
+        inputs.forEach(inp=>{
+            inp.disabled=true;
+            const correct=inp.getAttribute('data-letter');
+            const user=inp.value.toUpperCase().trim();
+            if(user===''){
+                inp.className='cw-input';
+                inp.style.color='#222';
+            }else if(user===correct){
+                inp.className='cw-input correct';
+                inp.style.color='#27ae60';
+            }else{
+                inp.className='cw-input wrong';
+                inp.style.color='#e74c3c';
+            }
+        });
+        document.getElementById('btnSolve').className='b-off';
+        document.getElementById('btnCheck').className='b-on';
+        document.getElementById('btnShow').className='b-off';
+    }
+
+    function modeShow(){
+        mode='show';
+        inputs.forEach(inp=>{
+            inp.disabled=true;
+            inp.value=inp.getAttribute('data-letter');
+            inp.className='cw-input shown';
+            inp.style.color='#222';
+            inp.style.background='transparent';
+        });
+        document.getElementById('btnSolve').className='b-off';
+        document.getElementById('btnCheck').className='b-off';
+        document.getElementById('btnShow').className='b-on';
+    }
+
+    // Ограничение ввода — только 1 буква
+    inputs.forEach(inp=>{
+        inp.addEventListener('input',function(){
+            this.value=this.value.toUpperCase().replace(/[^А-ЯЁ]/g,'').slice(0,1);
+        });
+    });
+
+    modeSolve();
+<`+`/script>
+</body>
+</html>`;
+
+    document.getElementById('ecode').value=h;
+    document.getElementById('emod').classList.add('on');
+}
+
+function copyExp(){
+    const ta=document.getElementById('ecode');
+    ta.select();
+    navigator.clipboard.writeText(ta.value).then(()=>alert('✅ Скопировано!'));
+}
+function downloadExp(){
+    const blob=new Blob([document.getElementById('ecode').value],{type:'text/html'});
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='crossword.html';
+    a.click();
+    alert('📥 Файл скачан!');
 }
 
 function resize(){ render(); }
 window.addEventListener('resize', resize);
 initG();
-const s=localStorage.getItem('cw3');
-if(s){ try{ const d=JSON.parse(s); rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid; }catch(e){} }
+const s=localStorage.getItem('cw4');
+if(s){ try{ const d=JSON.parse(s); document.getElementById('titleInput').value=d.title||'Кроссворд'; rows=d.rows; cols=d.cols; grid=d.grid; words=d.words; nid=d.nid; }catch(e){} }
 render();
 </script>
 </body>
